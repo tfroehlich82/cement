@@ -24,8 +24,10 @@ seen several iterations in design, and has continued to grow and improve
 since it's inception.  Cement is the most stable, and complete framework for
 command line and backend application development.
 
-.. image:: https://secure.travis-ci.org/datafolklabs/cement.png
+.. image:: https://secure.travis-ci.org/datafolklabs/cement.svg
   :target: https://travis-ci.org/#!/datafolklabs/cement
+.. image:: https://badges.gitter.im/Join%20Chat.svg
+  :target: https://gitter.im/datafolklabs/cement
 
 Core features include (but are not limited to):
 
@@ -57,12 +59,12 @@ that have external dependencies, as Cement explicitly does not include them.*
 Getting More Information
 ------------------------
 
- * DOCS: http://builtoncement.com/2.5/
+ * DOCS: http://builtoncement.com/2.7/
  * CODE: http://github.com/datafolklabs/cement/
  * PYPI: http://pypi.python.org/pypi/cement/
  * SITE: http://builtoncement.com/
  * T-CI: http://travis-ci.org/datafolklabs/cement
- * HELP: cement@librelist.org - #cement
+ * HELP: cement@librelist.org - #cement - gitter.im/datafolklabs/cement
 
 
 Mailing List
