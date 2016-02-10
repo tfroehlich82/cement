@@ -2,7 +2,6 @@
 
 import os
 import yaml
-from ..core import handler
 from ..utils.misc import minimal_logger
 from ..utils.fs import abspath
 from ..ext.ext_configobj import ConfigObjConfigHandler
@@ -30,7 +29,7 @@ class YamlConfigObjConfigHandler(ConfigObjConfigHandler):
     class Meta:
 
         """Handler meta-data."""
-        
+
         label = 'yaml_configobj'
 
     def __init__(self, *args, **kw):
@@ -53,4 +52,4 @@ class YamlConfigObjConfigHandler(ConfigObjConfigHandler):
 
 
 def load(app):
-    handler.register(YamlConfigObjConfigHandler)
+    app.handler.register(YamlConfigObjConfigHandler)

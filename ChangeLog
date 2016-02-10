@@ -28,6 +28,8 @@ development will happen as 2.7.x under the git master branch.
 
 Bugs:
 
+    * :issue:`310` - Resolved issue where console/file logs had duplicate
+      entries under certain circumstances.
     * :issue:`314` - Resolved inconsistent behavor in ``colorlog`` extension.
     * :issue:`316` - Running Nose tests with ``-s`` option causes traceback
     * :issue:`317` - Calling ``CementApp.run()`` should return results from
@@ -43,15 +45,20 @@ Features:
       in ``ext_argparse`` to eventually replace ``CementBaseController``.
     * :issue:`299` - Added Argcomplete Framework Extension
     * :issue:`322` - Added Tabulate Framework Extension (tabulatized output)
+    * :issue:`336` - Added Support for ``CementApp.reload()`` (SIGHUP)
+    * :issue:`337` - Added ``app.run_forever()`` alternative run method.
 
 Refactoring:
 
+    * :issue:`311` - Refactor Hooks/Handlers into CementApp
     * :issue:`319` - Use ``os.devnull`` instead of internal ``NullOut`` hack.
-
+    
 Incompatible:
 
+    * :issue:`311` - Hook ``signal`` now requires ``app`` argument.
     * :issue:`313` - Default ``Cement.Meta.exit_on_close`` to ``False``.
-      Calls to ``sys.exit()`` should be explicit by the app developer, and not implied by the framework.
+      Calls to ``sys.exit()`` should be explicit by the app developer, and 
+      not implied by the framework.
     * :issue:`332` - Output Handler Interface Must Support Keyword Arguments 
     
 

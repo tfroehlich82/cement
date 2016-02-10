@@ -1,6 +1,6 @@
 """Dummy Framework Extension"""
 
-from ..core import backend, output, handler, mail
+from ..core import backend, output, mail
 from ..utils.misc import minimal_logger
 
 LOG = minimal_logger(__name__)
@@ -27,7 +27,6 @@ class DummyOutputHandler(output.CementOutputHandler):
         #: Whether or not to include ``dummy`` as an available to choice
         #: to override the ``output_handler`` via command line options.
         overridable = False
-
 
     def render(self, data_dict, template=None, **kw):
         """
@@ -146,7 +145,7 @@ class DummyMailHandler(mail.CementMailHandler):
     class Meta:
 
         """Handler meta-data."""
-        
+
         #: Unique identifier for this handler
         label = 'dummy'
 
@@ -225,5 +224,5 @@ class DummyMailHandler(mail.CementMailHandler):
 
 
 def load(app):
-    handler.register(DummyOutputHandler)
-    handler.register(DummyMailHandler)
+    app.handler.register(DummyOutputHandler)
+    app.handler.register(DummyMailHandler)

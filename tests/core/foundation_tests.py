@@ -3,11 +3,16 @@
 import os
 import sys
 import json
+import signal
+from time import sleep
 from cement.core import foundation, exc, backend, config, extension, plugin
-from cement.core import log, output, handler, hook, arg, controller
+from cement.core.handler import CementBaseHandler
+from cement.core.controller import CementBaseController, expose
+from cement.core import log, output, hook, arg, controller
 from cement.core.interface import Interface
 from cement.utils import test
 from cement.utils.misc import init_defaults, rando, minimal_logger
+from nose.plugins.attrib import attr
 
 APP = rando()[:12]
 
@@ -33,7 +38,7 @@ class MyTestInterface(Interface):
         label = 'my_test_interface'
 
 
-class MyTestHandler(handler.CementBaseHandler):
+class MyTestHandler(CementBaseHandler):
 
     class Meta:
         label = 'my_test_handler'
@@ -148,15 +153,15 @@ class FoundationTestCase(test.CementCoreTestCase):
         from cement.ext import ext_json
 
         app = self.make_app('my-app-test',
-                            config_handler=ext_configparser.ConfigParserConfigHandler,
-                            log_handler=ext_logging.LoggingLogHandler(),
-                            arg_handler=ext_argparse.ArgParseArgumentHandler(),
-                            extension_handler=extension.CementExtensionHandler(),
-                            plugin_handler=ext_plugin.CementPluginHandler(),
-                            output_handler=ext_json.JsonOutputHandler(),
-                            mail_handler=ext_dummy.DummyMailHandler(),
-                            argv=[__file__, '--debug']
-                            )
+            config_handler=ext_configparser.ConfigParserConfigHandler,
+            log_handler=ext_logging.LoggingLogHandler(),
+            arg_handler=ext_argparse.ArgParseArgumentHandler(),
+            extension_handler=extension.CementExtensionHandler(),
+            plugin_handler=ext_plugin.CementPluginHandler(),
+            output_handler=ext_json.JsonOutputHandler(),
+            mail_handler=ext_dummy.DummyMailHandler(),
+            argv=[__file__, '--debug']
+            )
 
         app.setup()
 
@@ -264,11 +269,15 @@ class FoundationTestCase(test.CementCoreTestCase):
     @test.raises(exc.CaughtSignal)
     def test_cement_signal_handler(self):
         import signal
+        import types
+        global app
+        app = self.make_app('test')
+        frame = sys._getframe(0)
         try:
-            foundation.cement_signal_handler(signal.SIGTERM, 5)
+            foundation.cement_signal_handler(signal.SIGTERM, frame)
         except exc.CaughtSignal as e:
             self.eq(e.signum, signal.SIGTERM)
-            self.eq(e.frame, 5)
+            self.ok(isinstance(e.frame, types.FrameType))
             raise
 
     def test_cement_without_signals(self):
@@ -420,7 +429,7 @@ class FoundationTestCase(test.CementCoreTestCase):
     def test_define_handlers_meta(self):
         app = self.make_app(APP, define_handlers=[MyTestInterface])
         app.setup()
-        self.ok(handler.defined('my_test_interface'))
+        self.ok(app.handler.defined('my_test_interface'))
 
     def test_register_handlers_meta(self):
         app = self.make_app(APP,
@@ -428,4 +437,58 @@ class FoundationTestCase(test.CementCoreTestCase):
                             handlers=[MyTestHandler],
                             )
         app.setup()
-        self.ok(handler.registered('my_test_interface', 'my_test_handler'))
+        self.ok(app.handler.registered('my_test_interface', 
+                                       'my_test_handler'))
+
+    def test_disable_backend_globals(self):
+        app = self.make_app(APP, 
+            use_backend_globals=False,
+            define_handlers=[MyTestInterface],
+            handlers=[MyTestHandler],
+            define_hooks=['my_hook'],
+            )
+        app.setup()
+        self.ok(app.handler.registered('my_test_interface', 
+                                       'my_test_handler'))
+        self.ok(app.hook.defined('my_hook'))
+
+    def test_reload(self):
+        with self.app as app:
+            app.hook.define('bogus_hook1')
+            app.handler.define(MyTestInterface)
+            app.run()
+            self.ok(app.hook.defined('bogus_hook1'))
+            self.ok(app.handler.defined('my_test_interface'))
+            app.reload()
+            self.eq(app.hook.defined('bogus_hook1'), False)
+            self.eq(app.handler.defined('my_test_interface'), False)
+            app.run()
+
+    @test.raises(AssertionError)
+    def test_run_forever(self):
+        class Controller(CementBaseController):
+            class Meta:
+                label = 'base'
+
+            @expose()
+            def runit(self):
+                raise Exception("Fake some error")
+
+        app = self.make_app(base_controller=Controller, argv=['runit'])
+
+        def handler(signum, frame):
+            raise AssertionError('It ran forever!')
+
+        # set the signal handler and a 5-second alarm
+        signal.signal(signal.SIGALRM, handler)
+        signal.alarm(5)
+
+        try:
+            # this will run indefinitely
+            with app as app:
+                app.run_forever()
+        except AssertionError as e:
+            self.eq(e.args[0], 'It ran forever!')
+            raise
+        finally:
+            signal.alarm(0)  

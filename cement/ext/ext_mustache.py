@@ -2,7 +2,7 @@
 
 import sys
 from pystache.renderer import Renderer
-from ..core import output, exc, handler
+from ..core import output, exc
 from ..utils.misc import minimal_logger
 
 LOG = minimal_logger(__name__)
@@ -113,7 +113,7 @@ class MustacheOutputHandler(output.TemplateOutputHandler):
     class Meta:
 
         """Handler meta-data."""
-        
+
         interface = output.IOutput
         label = 'mustache'
 
@@ -139,7 +139,7 @@ class MustacheOutputHandler(output.TemplateOutputHandler):
 
         """
         template = kw.get('template', None)
-        
+
         LOG.debug("rendering output using '%s' as a template." % template)
         content = self.load_template(template)
         stache = Renderer(partials=self._partials_loader)
@@ -147,4 +147,4 @@ class MustacheOutputHandler(output.TemplateOutputHandler):
 
 
 def load(app):
-    handler.register(MustacheOutputHandler)
+    app.handler.register(MustacheOutputHandler)

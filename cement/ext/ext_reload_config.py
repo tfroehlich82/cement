@@ -97,7 +97,6 @@ perform an arbitrary action any time configuration changes are detected.
 
     from time import sleep
     from cement.core.exc import CaughtSignal
-    from cement.core import hook
     from cement.core.foundation import CementApp
     from cement.core.controller import CementBaseController, expose
 
@@ -125,7 +124,7 @@ perform an arbitrary action any time configuration changes are detected.
 
     with MyApp() as app:
         # run this anytime the configuration has changed
-        hook.register('post_reload_config', print_foo)
+        app.hook.register('post_reload_config', print_foo)
 
         try:
             app.run()
@@ -184,7 +183,7 @@ or any other configuration file is modified (spaces added for clarity):
 import os
 import signal
 import pyinotify
-from ..core import backend, hook
+from ..core import backend
 from ..utils.misc import minimal_logger
 from ..utils import shell, fs
 
@@ -204,10 +203,10 @@ class ConfigEventHandler(pyinotify.ProcessEvent):
         if event.pathname in self.watched_files:
             LOG.debug('config path modified: mask=%s, path=%s' %
                       (event.maskname, event.pathname))
-            for res in hook.run('pre_reload_config', self.app):
+            for res in self.app.hook.run('pre_reload_config', self.app):
                 pass
             self.app.config.parse_file(event.pathname)
-            for res in hook.run('post_reload_config', self.app):
+            for res in self.app.hook.run('post_reload_config', self.app):
                 pass
 
 
@@ -270,15 +269,15 @@ def kill_watcher(app):
         NOTIFIER.stop()
 
 
-def signal_handler(signum, frame):
+def signal_handler(app, signum, frame):
     if signum in [signal.SIGTERM, signal.SIGINT]:
         if NOTIFIER.isAlive():
             NOTIFIER.stop()
 
 
 def load(app):
-    hook.define('pre_reload_config')
-    hook.define('post_reload_config')
-    hook.register('pre_run', spawn_watcher)
-    hook.register('pre_close', kill_watcher)
-    hook.register('signal', signal_handler)
+    app.hook.define('pre_reload_config')
+    app.hook.define('post_reload_config')
+    app.hook.register('pre_run', spawn_watcher)
+    app.hook.register('pre_close', kill_watcher)
+    app.hook.register('signal', signal_handler)
