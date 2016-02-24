@@ -3,9 +3,21 @@ The Alarm Extension provides easy access to setting an application alarm to
 handle timing out operations.  See the
 `Python Signal Library <https://docs.python.org/3.5/library/signal.html>`_.
 
-Availability: Unix
+Requirements
+------------
 
-Example:
+ * No external dependencies.
+ * Only available on Unix/Linux
+
+
+Configuration
+-------------
+
+This extension does not honor any application configuration settings.
+
+
+Usage
+-----
 
 .. code-block:: python
 
@@ -62,6 +74,7 @@ class AlarmManager(object):
     alarm exceeds the given time it will raise ``signal.SIGALRM``.
 
     """
+
     def __init__(self, *args, **kw):
         super(AlarmManager, self).__init__(*args, **kw)
         self.msg = None
