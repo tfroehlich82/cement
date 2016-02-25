@@ -3,7 +3,13 @@
 What's New
 ==========
 
-New Features in Cement 2.7
+New Features in Cement 2.9
+--------------------------
+
+ * FIXME
+
+
+New Features in Cement 2.8
 --------------------------
 
 ArgparseController
@@ -48,6 +54,7 @@ Extensions
     * :ref:`Alarm <cement.ext.ext_alarm>` - Provides quick access to 
       setting an application alarm to easily handling timing out long running
       operations.
+    * :ref:`Memcached <cement.ext.ext_memcached>` - Now supported on Python 3. 
 
 
 Misc Enhancements

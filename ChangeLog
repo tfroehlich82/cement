@@ -11,7 +11,7 @@ All bugs/feature details can be found at:
 Where XXXXX is the 'Issue #' referenced below.  Additionally, this change log
 is available online at:
 
-    http://builtoncement.com/2.7/changes/
+    http://builtoncement.com/2.8/changes/
 
 
 See the :ref:`upgrading` section for more information related to
@@ -19,12 +19,32 @@ any incompatible changes, and how to update your application to fix them.
 Also check out the :ref:`whats_new` section for details on new features.
 
 
-2.7.1 - DEVELOPMENT (will be released as 2.7.2/dev or 2.8.0/stable)
+2.9.1 - DEVELOPMENT (will be released as dev/2.9.2 or stable/2.10.0)
 ------------------------------------------------------------------------------
 
-This is a branch off of the 2.6.x stable code base.  Maintenance releases for
-2.6.x will happen under the stable/2.6.x git branch, while forward feature
-development will happen as 2.7.x under the git master branch.
+This is a branch off of the 2.8.x stable code base.  Maintenance releases for
+2.8.x will happen under the stable/2.8.x git branch, while forward feature
+development will happen as 2.9.x under the git master branch.
+
+Bugs:
+
+    * None
+
+Features:
+
+    * None
+
+Refactoring;
+
+    * None
+
+Incompatible:
+
+    * None
+
+
+2.8.0 - Wed Feb 24, 2016
+------------------------------------------------------------------------------
 
 Bugs:
 
@@ -49,6 +69,7 @@ Features:
     * :issue:`336` - Added Support for ``CementApp.reload()`` (SIGHUP)
     * :issue:`337` - Added ``app.run_forever()`` alternative run method.
     * :issue:`342` - Added Alarm/Timeout Support
+    * :issue:`343` - Memcached Extension/Pylibmc Now Supports Python 3
 
 Refactoring:
 
