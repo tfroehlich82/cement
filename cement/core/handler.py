@@ -192,7 +192,7 @@ class HandlerManager(object):
             raise exc.FrameworkError("Handler type '%s' doesn't exist." %
                                      handler_type)
         if obj._meta.label in self.__handlers__[handler_type] and \
-                self.__handlers__[handler_type][obj._meta.label] != obj:
+                self.__handlers__[handler_type][obj._meta.label] != orig_obj:
             raise exc.FrameworkError("handlers['%s']['%s'] already exists" %
                                      (handler_type, obj._meta.label))
 
@@ -203,7 +203,7 @@ class HandlerManager(object):
             LOG.debug("Interface '%s' does not have a validator() function!" %
                       interface)
 
-        self.__handlers__[handler_type][obj.Meta.label] = orig_obj
+        self.__handlers__[handler_type][obj._meta.label] = orig_obj
 
     def registered(self, handler_type, handler_label):
         """
@@ -234,7 +234,7 @@ class HandlerManager(object):
         instantiated or non-instantiated handler class.
 
         :param handler_type: The type of handler (aka the interface label)
-        :param hander_def: The handler as defined in CementApp.Meta.
+        :param handler_def: The handler as defined in CementApp.Meta.
         :type handler_def: str, uninstantiated object, or instantiated object
         :param raise_error: Whether or not to raise an exception if unable
             to resolve the handler.
@@ -416,9 +416,9 @@ def list(handler_type):
     # only log debug for now as this won't be removed until Cement 3.x and
     # we don't have access to CementApp.Meta.ignore_deprecation_warnings here
     LOG.debug(
-        'Cement Deprecation Warning: `handler.get()` has been deprecated, '
+        'Cement Deprecation Warning: `handler.list()` has been deprecated, '
         'and will be removed in future versions of Cement.  You should now '
-        'use `CementApp.handler.get()` instead.'
+        'use `CementApp.handler.list()` instead.'
     )
 
     if handler_type not in backend.__handlers__:
