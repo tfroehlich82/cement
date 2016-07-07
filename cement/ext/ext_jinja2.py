@@ -1,13 +1,13 @@
 """
-The Genshi Extension module provides output templating based on the
-`Genshi Text Templating Language \
-<http://genshi.edgewall.org/wiki/Documentation/text-templates.html>`_.
+The Jinja2 Extension module provides output templating based on the
+`Jinja2 Templating Language \
+<http://jinja.pocoo.org/>`_.
 
 
 Requirements
 ------------
 
- * Genshi (``pip install genshi``)
+ * Jinja2 (``pip install Jinja2``)
 
 
 Configuration
@@ -34,8 +34,8 @@ Usage
     class MyApp(CementApp):
         class Meta:
             label = 'myapp'
-            extensions = ['genshi']
-            output_handler = 'genshi'
+            extensions = ['jinja2']
+            output_handler = 'jinja2'
             template_module = 'myapp.templates'
             template_dirs = [
                 '~/.myapp/templates',
@@ -49,31 +49,31 @@ Usage
         data = dict(foo='bar')
 
         # render the data to STDOUT (default) via a template
-        app.render(data, 'my_template.genshi')
+        app.render(data, 'my_template.jinja2')
 
 
 Note that the above ``template_module`` and ``template_dirs`` are the
 auto-defined defaults but are added here for clarity.  From here, you
-would then put a Genshi template file in
-``myapp/templates/my_template.genshi`` or
-``/usr/lib/myapp/templates/my_template.genshi``.
+would then put a Jinja2 template file in
+``myapp/templates/my_template.jinja2`` or
+``/usr/lib/myapp/templates/my_template.jinja2``.
 
 """
 
 from ..core import output
 from ..utils.misc import minimal_logger
-from genshi.template import NewTextTemplate
+from jinja2 import Environment
 
 LOG = minimal_logger(__name__)
 
 
-class GenshiOutputHandler(output.TemplateOutputHandler):
+class Jinja2OutputHandler(output.TemplateOutputHandler):
 
     """
     This class implements the :ref:`IOutput <cement.core.output>`
     interface.  It provides text output from template and uses the
-    `Genshi Text Templating Language
-    <http://genshi.edgewall.org/wiki/Documentation/text-templates.html>`_.
+    `Jinja2 Templating Language
+    <http://jinja.pocoo.org/>`_.
     Please see the developer documentation on
     :ref:`Output Handling <dev_output_handling>`.
 
@@ -84,7 +84,7 @@ class GenshiOutputHandler(output.TemplateOutputHandler):
         """Handler meta-data."""
 
         interface = output.IOutput
-        label = 'genshi'
+        label = 'jinja2'
 
     def render(self, data_dict, **kw):
         """
@@ -103,9 +103,10 @@ class GenshiOutputHandler(output.TemplateOutputHandler):
 
         LOG.debug("rendering output using '%s' as a template." % template)
         content = self.load_template(template)
-        tmpl = NewTextTemplate(content)
-        return tmpl.generate(**data_dict).render()
+        env = Environment(keep_trailing_newline=True)
+        tmpl = env.from_string(content.decode('utf-8'))
+        return tmpl.render(**data_dict)
 
 
 def load(app):
-    app.handler.register(GenshiOutputHandler)
+    app.handler.register(Jinja2OutputHandler)

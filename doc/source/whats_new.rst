@@ -6,7 +6,44 @@ What's New
 New Features in Cement 2.9
 --------------------------
 
- * FIXME
+Support for Multiple File Plugin Directories
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Prior to Cement 2.9, application plugins were only supported as single files
+such as ``myplugin.py``.  Plugins can now be a single file, or full python 
+modules like ``myplugin/__init__.py``.
+
+An example plugin might look like:
+
+.. code-block:: console
+
+    myplugin/
+        __init__.py
+        controllers.py
+        templates/
+            cmd1.mustache
+            cmd2.mustache
+            cmd3.mustache
+
+The only thing required in a plugin is that is supply as ``load()`` function
+either in a ``myplugin.py`` or ``myplugin/__init__.py``.  The rest is up to 
+the developer.
+
+See :ref:`Application Plugins <application_plugins>` for more information.
+
+Related:
+
+    * :issue:`350`
+
+
+Extensions
+^^^^^^^^^^
+
+    * :ref:`Jinja2 <cement.ext.ext_jinja2>` - Provides template support using 
+      the Jinja2 language.
+    * :ref:`Redis <cement.ext.ext_redis>` - Provides caching support using 
+      Redis backend.
+
 
 
 New Features in Cement 2.8
@@ -113,7 +150,8 @@ Or a more complete example:
             print('Caught Exception: %s' % e)
 
 
-When the ``with`` statement is initialized, the ``app`` object is created, and then right away ``app.setup()`` is called before entering the block.  When
+When the ``with`` statement is initialized, the ``app`` object is created, and 
+then right away ``app.setup()`` is called before entering the block.  When
 the ``with`` block is exited ``app.close()`` is also called.  This offers a
 much cleaner approach, while still ensuring that the essential pieces are run
 appropriately.  If you require more control over how/when ``app.setup()`` and

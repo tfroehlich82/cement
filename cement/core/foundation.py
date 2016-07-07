@@ -1,13 +1,11 @@
 """Cement core foundation module."""
 
-import re
 import os
 import sys
 import signal
-import copy
 import platform
 from time import sleep
-from ..core import backend, exc, log, config, plugin, interface
+from ..core import backend, exc, log, config, plugin
 from ..core import output, extension, arg, controller, meta, cache, mail
 from ..core.handler import HandlerManager
 from ..core.hook import HookManager
@@ -36,7 +34,7 @@ def add_handler_override_options(app):
         return
 
     for i in app._meta.handler_override_options:
-        if i not in interface.list():
+        if i not in app.handler.list_types():
             LOG.debug("interface '%s'" % i +
                       " is not defined, can not override handlers")
             continue
@@ -204,6 +202,11 @@ class CementApp(meta.MetaMixin):
         ``sys.exit(X)`` where ``X`` is ``self.exit_code``.
         """
 
+        config_extension = '.conf'
+        """
+        Extension used to identify application and plugin configuration files.
+        """
+
         config_files = None
         """
         List of config files to parse.
@@ -222,6 +225,9 @@ class CementApp(meta.MetaMixin):
         Files are loaded in order, and have precedence in order.  Therefore,
         the last configuration loaded has precedence (and overwrites settings
         loaded from previous configuration files).
+
+        Note that ``.conf`` is the default config file extension, defined by
+        ``CementApp.Meta.config_extension``.
         """
 
         plugins = []
@@ -234,7 +240,8 @@ class CementApp(meta.MetaMixin):
         plugin_config_dirs = None
         """
         A list of directory paths where plugin config files can be found.
-        Files must end in `.conf` or they will be ignored.
+        Files must end in ``.conf`` (or the extension defined by
+        ``CementApp.Meta.config_extension``) or they will be ignored.
 
         Note: Though ``CementApp.Meta.plugin_config_dirs`` is ``None``, Cement
         will set this to a default list based on ``CementApp.Meta.label``.
@@ -252,9 +259,11 @@ class CementApp(meta.MetaMixin):
 
         plugin_config_dir = None
         """
-        A directory path where plugin config files can be found.  Files
-        must end in `.conf`.  By default, this setting is also overridden
-        by the ``[<app_label>] -> plugin_config_dir`` config setting parsed in
+        A directory path where plugin config files can be found.  Files must
+        end in ``.conf`` (or the extension defined by
+        ``CementApp.Meta.config_extension``) or they will be ignored.  By
+        default, this setting is also overridden by the
+        ``[<app_label>] -> plugin_config_dir`` config setting parsed in
         any of the application configuration files.
 
         If set, this item will be **appended** to
@@ -651,6 +660,7 @@ class CementApp(meta.MetaMixin):
         self._loaded_bootstrap = None
         self._parsed_args = None
         self._last_rendered = None
+        self._extended_members = []
         self.__saved_stdout__ = None
         self.__saved_stderr__ = None
         self.handler = None
@@ -714,6 +724,8 @@ class CementApp(meta.MetaMixin):
         LOG.debug("extending appication with '.%s' (%s)" %
                   (member_name, member_object))
         setattr(self, member_name, member_object)
+        if member_name not in self._extended_members:
+            self._extended_members.append(member_name)
 
     def _validate_label(self):
         if not self._meta.label:
@@ -843,6 +855,9 @@ class CementApp(meta.MetaMixin):
         :returns: ``None``
         """
         LOG.debug('reloading the %s application' % self._meta.label)
+        for member in self._extended_members:
+            delattr(self, member)
+        self._extended_members = []
         self.handler.__handlers__ = {}
         self.hook.__hooks__ = {}
         self._lay_cement()
@@ -931,11 +946,11 @@ class CementApp(meta.MetaMixin):
 
         """
         if not is_true(self._meta.ignore_deprecation_warnings):
-            self.log.warn("Cement Deprecation Warning: " +
-                          "CementApp.get_last_rendered() has been " +
-                          "deprecated, and will be removed in future " +
-                          "versions of Cement.  You should use the " +
-                          "CementApp.last_rendered property instead.")
+            self.log.warning("Cement Deprecation Warning: " +
+                             "CementApp.get_last_rendered() has been " +
+                             "deprecated, and will be removed in future " +
+                             "versions of Cement.  You should use the " +
+                             "CementApp.last_rendered property instead.")
         return self._last_rendered
 
     @property
@@ -987,7 +1002,7 @@ class CementApp(meta.MetaMixin):
             self._suppress_output()
 
         # Forward/Backward compat, see Issue #311
-        if self._meta.use_backend_globals:
+        if self._meta.use_backend_globals is True:
             backend.__hooks__ = {}
             backend.__handlers__ = {}
             self.handler = HandlerManager(use_backend_globals=True)
@@ -1123,10 +1138,11 @@ class CementApp(meta.MetaMixin):
 
         if self._meta.config_files is None:
             label = self._meta.label
+            ext = self._meta.config_extension
 
             self._meta.config_files = [
-                os.path.join('/', 'etc', label, '%s.conf' % label),
-                os.path.join(fs.HOME_DIR, '.%s.conf' % label),
+                os.path.join('/', 'etc', label, '%s%s' % (label, ext)),
+                os.path.join(fs.HOME_DIR, '.%s%s' % (label, ext)),
                 os.path.join(fs.HOME_DIR, '.%s' % label, 'config'),
             ]
 
@@ -1238,10 +1254,14 @@ class CementApp(meta.MetaMixin):
 
         # template dirs
         if self._meta.template_dirs is None:
-            self._meta.template_dirs = [
+            self._meta.template_dirs = []
+            paths = [
                 os.path.join(fs.HOME_DIR, '.%s' % label, 'templates'),
                 '/usr/lib/%s/templates' % label,
             ]
+            for path in paths:
+                self.add_template_dir(path)
+
         template_dir = self._meta.template_dir
         if template_dir is not None:
             if template_dir not in self._meta.template_dirs:
@@ -1326,6 +1346,42 @@ class CementApp(meta.MetaMixin):
 
         """
         pass
+
+    def add_template_dir(self, path):
+        """
+        Append a directory path to the list of template directories to parse
+        for templates.
+
+        :param path: Directory path that contains template files.
+
+        Usage:
+
+        .. code-block:: python
+
+            app.add_template_dir('/path/to/my/templates')
+
+        """
+        path = fs.abspath(path)
+        if path not in self._meta.template_dirs:
+            self._meta.template_dirs.append(path)
+
+    def remove_template_dir(self, path):
+        """
+        Remove a directory path from the list of template directories to parse
+        for templates.
+
+        :param path: Directory path that contains template files.
+
+        Usage:
+
+        .. code-block:: python
+
+            app.remove_template_dir('/path/to/my/templates')
+
+        """
+        path = fs.abspath(path)
+        if path in self._meta.template_dirs:
+            self._meta.template_dirs.remove(path)
 
     def __enter__(self):
         self.setup()

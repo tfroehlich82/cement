@@ -16,6 +16,7 @@ class BogusHandler1(log.CementLogHandler):
 class LogTestCase(test.CementCoreTestCase):
 
     def setUp(self):
+        super(LogTestCase, self).setUp()
         self.app = self.make_app()
 
     @test.raises(exc.InterfaceError)
@@ -34,7 +35,7 @@ class LogTestCase(test.CementCoreTestCase):
         app = self.make_app(config_defaults=defaults)
         app.setup()
         app.log.info('Info Message')
-        app.log.warn('Warn Message')
+        app.log.warning('Warning Message')
         app.log.error('Error Message')
         app.log.fatal('Fatal Message')
         app.log.debug('Debug Message')

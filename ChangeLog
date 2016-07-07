@@ -28,13 +28,22 @@ development will happen as 2.9.x under the git master branch.
 
 Bugs:
 
+    * :issue:`363` - CementTestCase does not delete temporary 
+      files/directories
     * :issue:`346` - AttributeError: 'module' object has no attribute 'SIGHUP'
       on Windows
+    * :issue:`352` - ``CementApp.extend()`` Breaks on ``CementApp.reload()``
+    * :issue:`366` - Output Handler Override Options Dissappear
 
 
 Features:
 
-    * None
+    * :issue:`350` - Support for Plugin Directories
+    * :pr:`371` - Jinja2 Templating Support
+    * :issue:`373` - Switch over to using Flake8 for PEP8 and Style Compliance
+    * :pr:`375` - Redis Cache Handler Support
+    * :issue:`379` - Support for Alternative Config File Extensions
+    
 
 Refactoring;
 
@@ -43,6 +52,12 @@ Refactoring;
 Incompatible:
 
     * None
+
+Deprecation:
+
+    * :issue:`365` - Deprecated ``LoggingLogHandler.warn()``
+    * :issue:`372` - Deprecated Explicit Python 3.2 Support
+    * :issue:`376` - Deprecated ``cement.core.interface.list()``
 
 
 2.8.0 - Wed Feb 24, 2016

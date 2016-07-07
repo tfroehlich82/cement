@@ -2,7 +2,7 @@
 
 import os
 import logging
-from tempfile import mkstemp
+import shutil
 from cement.core import handler, backend, log
 from cement.ext import ext_logging
 from cement.utils import test
@@ -32,22 +32,29 @@ class LoggingExtTestCase(test.CementExtTestCase):
         app = self.make_app(config_defaults=defaults)
         app.setup()
         app.log.info('TEST', extra=dict(namespace=__name__))
-        app.log.warn('TEST', extra=dict(namespace=__name__))
+        app.log.warning('TEST', extra=dict(namespace=__name__))
         app.log.error('TEST', extra=dict(namespace=__name__))
         app.log.fatal('TEST', extra=dict(namespace=__name__))
         app.log.debug('TEST', extra=dict(namespace=__name__))
 
         app.log.info('TEST', __name__, extra=dict(foo='bar'))
-        app.log.warn('TEST', __name__, extra=dict(foo='bar'))
+        app.log.warning('TEST', __name__, extra=dict(foo='bar'))
         app.log.error('TEST', __name__, extra=dict(foo='bar'))
         app.log.fatal('TEST', __name__, extra=dict(foo='bar'))
         app.log.debug('TEST', __name__, extra=dict(foo='bar'))
 
         app.log.info('TEST', __name__)
-        app.log.warn('TEST', __name__)
+        app.log.warning('TEST', __name__)
         app.log.error('TEST', __name__)
         app.log.fatal('TEST', __name__)
         app.log.debug('TEST', __name__)
+
+    def test_deprecated_warn(self):
+        defaults = init_defaults(APP, 'log.logging')
+        defaults['log.logging']['level'] = 'warn'
+        app = self.make_app(config_defaults=defaults)
+        app.setup()
+        app.log.warn('Warn Message')
 
     def test_bad_level(self):
         defaults = init_defaults()
@@ -98,13 +105,12 @@ class LoggingExtTestCase(test.CementExtTestCase):
         self.eq(os.path.exists("%s.3" % log_file), False)
 
     def test_missing_log_dir(self):
-        _, tmp_path = mkstemp()
-        if os.path.exists(tmp_path):
-            os.remove(tmp_path)
+        if os.path.exists(self.tmp_dir):
+            shutil.rmtree(self.tmp_dir)
 
         defaults = init_defaults()
         defaults['log.logging'] = dict(
-            file=os.path.join(tmp_path, '%s.log' % APP),
+            file=os.path.join(self.tmp_dir, '%s.log' % APP),
         )
         app = self.make_app(config_defaults=defaults)
         app.setup()

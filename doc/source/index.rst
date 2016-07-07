@@ -43,10 +43,10 @@ Core features include (but are not limited to):
  * Cache handler interface adds caching support for improved performance
  * Controller handler supports sub-commands, and nested controllers
  * Zero external dependencies* of the core library
- * 100% test coverage using ``nose``
- * 100% PEP8 compliant using ``pep8`` and ``autopep8`` tools
+ * 100% test coverage using ``nose`` and ``coverage``
+ * 100% PEP8 and style compliant using ``flake8``
  * Extensive Sphinx documentation
- * Tested on Python 2.6, 2.7, 3.2, 3.3, 3.4, 3.5
+ * Tested on Python 2.6, 2.7, 3.3, 3.4, 3.5
 
 *Note that argparse is required as an external dependency for Python < 2.7
 and < 3.2.  Additionally, some optional extensions that are shipped with
