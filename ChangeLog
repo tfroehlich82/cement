@@ -34,7 +34,8 @@ Bugs:
       on Windows
     * :issue:`352` - ``CementApp.extend()`` Breaks on ``CementApp.reload()``
     * :issue:`366` - Output Handler Override Options Dissappear
-
+    * :issue:`385` - JsonOutputHandler/YamlOutputHandler/MustacheOutputHandler 
+      Do not Pass Keyword Args down to backend render functions
 
 Features:
 
@@ -43,7 +44,7 @@ Features:
     * :issue:`373` - Switch over to using Flake8 for PEP8 and Style Compliance
     * :pr:`375` - Redis Cache Handler Support
     * :issue:`379` - Support for Alternative Config File Extensions
-    
+    * :issue:`389` - ConfigObj Support for Python 3
 
 Refactoring;
 

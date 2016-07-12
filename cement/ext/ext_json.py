@@ -14,7 +14,7 @@ Requirements
 Configuration
 -------------
 
-This extension does not honor any application configuration settings.
+This extension does not support any configuration settings.
 
 
 Usage
@@ -68,9 +68,33 @@ See ``CementApp.Meta.handler_override_options``.
     $ python myapp.py -o json
     {"foo": "bar"}
 
+
+What if I Want To Use UltraJson or Something Else?
+--------------------------------------------------
+
+It is possible to override the backend ``json`` library module to use, for
+example if you wanted to use UltraJson (``ujson``) or another
+**drop-in replacement** library.  The recommended solution would be to
+override the ``JsonOutputHandler`` with you're own sub-classed version, and
+modify the ``json_module`` meta-data option.
+
+.. code-block:: python
+
+    from cement.ext.ext_json import JsonOutputHandler
+
+    class MyJsonHandler(JsonOutputHandler):
+        class Meta:
+            json_module = 'ujson'
+
+    # then, the class must be replaced via a 'post_setup' hook
+
+    def override_json(app):
+        app.handler.register(MyJsonHandler, force=True)
+
+    app.hook.register('post_setup', override_json)
+
 """
 
-import json
 from ..core import output
 from ..utils.misc import minimal_logger
 from ..ext.ext_configparser import ConfigParserConfigHandler
@@ -147,27 +171,37 @@ class JsonOutputHandler(output.CementOutputHandler):
         label = 'json'
         """The string identifier of this handler."""
 
-        #: Whether or not to include ``json`` as an available to choice
+        #: Whether or not to include ``json`` as an available choice
         #: to override the ``output_handler`` via command line options.
         overridable = True
 
+        #: Backend JSON library module to use (`json`, `ujson`)
+        json_module = 'json'
+
     def __init__(self, *args, **kw):
         super(JsonOutputHandler, self).__init__(*args, **kw)
+        self._json = None
 
-    def render(self, data_dict, **kw):
+    def _setup(self, app):
+        super(JsonOutputHandler, self)._setup(app)
+        self._json = __import__(self._meta.json_module,
+                                globals(), locals(), [], 0)
+
+    def render(self, data_dict, template=None, **kw):
         """
         Take a data dictionary and render it as Json output.  Note that the
         template option is received here per the interface, however this
-        handler just ignores it.
+        handler just ignores it.  Additional keyword arguments passed to
+        ``json.dumps()``.
 
         :param data_dict: The data dictionary to render.
-        :param template: This option is completely ignored.
+        :keyword template: This option is completely ignored.
         :returns: A JSON encoded string.
         :rtype: ``str``
 
         """
         LOG.debug("rendering output as Json via %s" % self.__module__)
-        return json.dumps(data_dict)
+        return self._json.dumps(data_dict, **kw)
 
 
 class JsonConfigHandler(ConfigParserConfigHandler):
@@ -185,8 +219,17 @@ class JsonConfigHandler(ConfigParserConfigHandler):
 
         label = 'json'
 
+        #: Backend JSON library module to use (`json`, `ujson`).
+        json_module = 'json'
+
     def __init__(self, *args, **kw):
         super(JsonConfigHandler, self).__init__(*args, **kw)
+        self._json = None
+
+    def _setup(self, app):
+        super(JsonConfigHandler, self)._setup(app)
+        self._json = __import__(self._meta.json_module,
+                                globals(), locals(), [], 0)
 
     def _parse_file(self, file_path):
         """
@@ -197,7 +240,7 @@ class JsonConfigHandler(ConfigParserConfigHandler):
         :returns: boolean
 
         """
-        self.merge(json.load(open(file_path)))
+        self.merge(self._json.load(open(file_path)))
 
         # FIX ME: Should check that file was read properly, however if not it
         # will likely raise an exception anyhow.

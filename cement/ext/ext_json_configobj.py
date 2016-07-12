@@ -13,7 +13,7 @@ Requirements
 Configuration
 -------------
 
-This extension does not honor any application configuration settings.
+This extension does not support any configuration settings.
 
 
 Usage
@@ -55,7 +55,6 @@ Usage
 
 """
 
-import json
 from ..utils.misc import minimal_logger
 from ..ext.ext_configobj import ConfigObjConfigHandler
 
@@ -84,8 +83,17 @@ class JsonConfigObjConfigHandler(ConfigObjConfigHandler):
         #: The string identifier of this handler.
         label = 'json_configobj'
 
+        #: Backend JSON module to use (``json``, ``ujson``, etc)
+        json_module = 'json'
+
     def __init__(self, *args, **kw):
         super(JsonConfigObjConfigHandler, self).__init__(*args, **kw)
+        self._json = None
+
+    def _setup(self, app):
+        super(JsonConfigObjConfigHandler, self)._setup(app)
+        self._json = __import__(self._meta.json_module,
+                                globals(), locals(), [], 0)
 
     def _parse_file(self, file_path):
         """
@@ -97,7 +105,7 @@ class JsonConfigObjConfigHandler(ConfigObjConfigHandler):
         :returns: boolean
 
         """
-        self.merge(json.load(open(file_path)))
+        self.merge(self._json.load(open(file_path)))
 
         # FIX ME: Should check that file was read properly, however if not it
         # will likely raise an exception anyhow.
