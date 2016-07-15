@@ -12,8 +12,16 @@ from ..core.hook import HookManager
 from ..utils.misc import is_true, minimal_logger
 from ..utils import fs
 
-if sys.version_info[0] >= 3:
-    from imp import reload  # pragma: nocover
+# The `imp` module is deprecated in favor of `importlib` in 3.4, but it
+# wasn't introduced until 3.1.  Finally, reload is a builtin on Python < 3
+pyver = sys.version_info
+if pyver[0] >= 3 and pyver[1] >= 4:                # pragma: nocover  # noqa
+    from importlib import reload as reload_module  # pragma: nocover  # noqa
+elif pyver[0] >= 3:                                # pragma: nocover  # noqa
+    from imp import reload as reload_module        # pragma: nocover  # noqa
+else:                                              # pragma: nocover  # noqa
+    reload_module = reload                         # pragma: nocover  # noqa
+
 
 LOG = minimal_logger(__name__)
 if platform.system() == 'Windows':
@@ -408,6 +416,32 @@ class CementApp(meta.MetaMixin):
         config_defaults = None
         """Default configuration dictionary.  Must be of type 'dict'."""
 
+        meta_defaults = {}
+        """
+        Default metadata dictionary used to pass high level options from the
+        application down to handlers at the point they are registered by the
+        framework **if the handler has not already been instantiated**.
+
+        For example, if requiring the ``json`` extension, you might want to
+        override ``JsonOutputHandler.Meta.json_module`` with ``ujson`` by
+        doing the following
+
+        .. code-block:: python
+
+            from cement.core.foundation import CementApp
+            from cement.utils.misc import init_defaults
+
+            META = init_defaults('output.json')
+            META['output.json']['json_module'] = 'ujson'
+
+            class MyApp(CementApp):
+                class Meta:
+                    label = 'myapp'
+                    extensions = ['json']
+                    meta_defaults = META
+
+        """
+
         catch_signals = SIGNALS
         """
         List of signals to catch, and raise exc.CaughtSignal for.
@@ -698,6 +732,7 @@ class CementApp(meta.MetaMixin):
         self._extended_members = []
         self.__saved_stdout__ = None
         self.__saved_stderr__ = None
+        self.__retry_hooks__ = []
         self.handler = None
         self.hook = None
 
@@ -803,7 +838,7 @@ class CementApp(meta.MetaMixin):
 
                 self._loaded_bootstrap = sys.modules[self._meta.bootstrap]
             else:
-                reload(self._loaded_bootstrap)
+                reload_module(self._loaded_bootstrap)
 
         for res in self.hook.run('pre_setup', self):
             pass
@@ -818,6 +853,9 @@ class CementApp(meta.MetaMixin):
         self._setup_arg_handler()
         self._setup_output_handler()
         self._setup_controllers()
+
+        for hook_spec in self.__retry_hooks__:
+            self.hook.register(*hook_spec)
 
         for res in self.hook.run('post_setup', self):
             pass
@@ -1069,9 +1107,19 @@ class CementApp(meta.MetaMixin):
         self.hook.register('post_argument_parsing',
                            handler_override, weight=-99)
 
-        # register application hooks from meta
-        for label, func in self._meta.hooks:
-            self.hook.register(label, func)
+        # register application hooks from meta.  the hooks listed in
+        # CementApp.Meta.hooks are registered here, so obviously can not be
+        # for any hooks other than the builtin framework hooks that we just
+        # defined here (above).  Anything that we couldn't register here
+        # will be retried after setup
+        self.__retry_hooks__ = []
+        for hook_spec in self._meta.hooks:
+            if not self.hook.defined(hook_spec[0]):
+                LOG.debug('hook %s not defined, will retry after setup' %
+                          hook_spec[0])
+                self.__retry_hooks__.append(hook_spec)
+            else:
+                self.hook.register(*hook_spec)
 
         # define and register handlers
         self.handler.define(extension.IExtension)
@@ -1148,7 +1196,17 @@ class CementApp(meta.MetaMixin):
             self.catch_signal(signum)
 
     def _resolve_handler(self, handler_type, handler_def, raise_error=True):
-        han = self.handler.resolve(handler_type, handler_def, raise_error)
+        meta_defaults = {}
+        if type(handler_def) == str:
+            _meta_label = "%s.%s" % (handler_type, handler_def)
+            meta_defaults = self._meta.meta_defaults.get(_meta_label, {})
+        elif hasattr(handler_def, 'Meta'):
+            _meta_label = "%s.%s" % (handler_type, handler_def.Meta.label)
+            meta_defaults = self._meta.meta_defaults.get(_meta_label, {})
+
+        han = self.handler.resolve(handler_type, handler_def,
+                                   raise_error=raise_error,
+                                   meta_defaults=meta_defaults)
         if han is not None:
             han._setup(self)
             return han

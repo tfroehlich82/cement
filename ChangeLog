@@ -18,13 +18,42 @@ See the :ref:`upgrading` section for more information related to
 any incompatible changes, and how to update your application to fix them.
 Also check out the :ref:`whats_new` section for details on new features.
 
-
-2.9.1 - DEVELOPMENT (will be released as dev/2.9.2 or stable/2.10.0)
+2.11.1 - DEVELOPMENT (will be released as dev/2.11.2 or stable/2.12.0)
 ------------------------------------------------------------------------------
 
-This is a branch off of the 2.8.x stable code base.  Maintenance releases for
-2.8.x will happen under the stable/2.8.x git branch, while forward feature
-development will happen as 2.9.x under the git master branch.
+This is a branch off of the 2.10.x stable code base.  Maintenance releases for
+2.10.x will happen under the stable/2.10.x git branch, while forward feature
+development will happen as 2.11.x under the git master branch.
+
+Bugs:
+
+    * None
+
+Features:
+
+    * None
+
+Refactoring:
+
+    * None
+
+Incompatible:
+
+    * None
+
+Deprecation:
+
+    * None
+
+
+2.10.2 - Thu July 14, 2016
+------------------------------------------------------------------------------
+
+Bumping version due to issue with uploading to PyPi.
+
+
+2.10.0 - Thu July 14, 2016
+------------------------------------------------------------------------------
 
 Bugs:
 
@@ -32,23 +61,33 @@ Bugs:
       files/directories
     * :issue:`346` - AttributeError: 'module' object has no attribute 'SIGHUP'
       on Windows
-    * :issue:`352` - ``CementApp.extend()`` Breaks on ``CementApp.reload()``
-    * :issue:`366` - Output Handler Override Options Dissappear
+    * :issue:`352` - ``CementApp.extend()`` breaks on ``CementApp.reload()``
+    * :issue:`366` - Output handler override options dissappear
     * :issue:`385` - JsonOutputHandler/YamlOutputHandler/MustacheOutputHandler 
-      Do not Pass Keyword Args down to backend render functions
+      Do not pass keyword args down to backend render functions
+    * :issue:`393` - ``CementApp.Meta.hooks`` ignored for hooks defined by 
+      extensions
 
 Features:
 
-    * :issue:`350` - Support for Plugin Directories
-    * :pr:`371` - Jinja2 Templating Support
-    * :issue:`373` - Switch over to using Flake8 for PEP8 and Style Compliance
-    * :pr:`375` - Redis Cache Handler Support
-    * :issue:`379` - Support for Alternative Config File Extensions
-    * :issue:`389` - ConfigObj Support for Python 3
+    * :issue:`350` - Support for plugin directories
+    * :issue:`370` - Handlebars templating support
+    * :pr:`371` - Jinja2 templating support
+    * :issue:`373` - Switch over to using Flake8 for PEP8 and style compliance
+    * :pr:`375` - Redis cache handler support
+    * :issue:`379` - Support for alternative config file extensions
+    * :issue:`380` - Support for Cython/Compiled Plugins
+    * :issue:`389` - ConfigObj support for Python 3
+    * :issue:`394` - Watchdog extension for cross-platform filesystem event 
+      monitoring
+    * :issue:`395` - Ability to pass metadata keyword arguments to handlers
+      via ``CementApp.Meta.meta_defaults``.
 
 Refactoring;
 
-    * None
+    * :issue:`386` - Partially deprecated use of ``imp`` in favor of 
+      ``importlib`` on Python >= 3.1
+    * :issue:`390` - ArgparseArgumentHandler should store unknown arguments
 
 Incompatible:
 

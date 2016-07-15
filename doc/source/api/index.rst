@@ -56,6 +56,7 @@ Cement Extension Modules
    ext/ext_daemon
    ext/ext_dummy
    ext/ext_genshi
+   ext/ext_handlebars
    ext/ext_jinja2
    ext/ext_json
    ext/ext_json_configobj
@@ -69,3 +70,5 @@ Cement Extension Modules
    ext/ext_tabulate
    ext/ext_yaml
    ext/ext_yaml_configobj
+   ext/ext_watchdog
+

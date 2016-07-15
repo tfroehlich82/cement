@@ -333,8 +333,8 @@ it to ``CementApp``:
     app = CementApp('myapp', log_handler=MyLogHandler)
 
 
-Hander Default Configuration Settings
--------------------------------------
+Handler Default Configuration Settings
+--------------------------------------
 
 All handlers can define default config file settings via their
 ``config_defaults`` meta option.  These will be merged into the ``app.config``

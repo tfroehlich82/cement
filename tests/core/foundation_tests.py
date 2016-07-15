@@ -427,6 +427,21 @@ class FoundationTestCase(test.CementCoreTestCase):
         for res in hook.run('my_custom_hook'):
             pass
 
+    def test_register_hooks_meta_retry(self):
+        # hooks registered this way for non-framework hooks need to be retried
+        # so we make sure it's actually being registered.
+        def my_custom_hook_func():
+            raise HookTestException('OK')
+
+        app = self.make_app(APP, 
+            extensions=['watchdog'],
+            hooks=[
+                ('watchdog_pre_start', my_custom_hook_func)
+            ]
+        )
+        app.setup()
+        self.eq(len(app.hook.__hooks__['watchdog_pre_start']), 1)
+
     def test_define_handlers_meta(self):
         app = self.make_app(APP, define_handlers=[MyTestInterface])
         app.setup()
@@ -520,3 +535,13 @@ class FoundationTestCase(test.CementCoreTestCase):
 
         app.__import__('time')
         app.__import__('sleep', from_module='time')
+
+    def test_meta_defaults(self):
+        DEBUG_FORMAT = "TEST DEBUG FORMAT - %s" % self.rando
+        META = {}
+        META['log.logging'] = {}
+        META['log.logging']['debug_format'] = DEBUG_FORMAT
+        app = self.make_app(meta_defaults=META)
+        app.setup()
+        self.eq(app.log._meta.debug_format, DEBUG_FORMAT)
+

@@ -16,3 +16,5 @@ tabulate
 pylibmc
 redis
 jinja2
+watchdog
+pybars3
