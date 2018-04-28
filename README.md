@@ -1,7 +1,11 @@
 # Cement Framework
 
 **NOTE: 2.11.x is the development version of Cement.  Please use stable/2.10.x
-in production until stable/2.12.x is released.**
+in production until stable/2.12.x is released.  Additionally, it is unlikely
+that this branch will see any further development, as all future development
+is currently happening in the `portland` branch in prepartion for Cement 3
+(sometime in 2018).**
+
 
 Cement is an advanced CLI Application Framework for Python.  Its goal is to
 introduce a standard, and feature-full platform for both simple and complex
