@@ -1,4 +1,4 @@
-.PHONY: all init doc test comply clean
+.PHONY: all init doc test comply clean dist dist-upload
 
 all: init test doc clean
 
@@ -20,3 +20,11 @@ doc:
 clean:
 	find . -name '*.py[co]' -delete
 	rm -rf doc/build
+
+dist: clean
+	rm -rf dist/*
+	python setup.py sdist
+	python setup.py bdist_wheel
+
+dist-upload:
+	twine upload dist/*
