@@ -55,7 +55,7 @@ along with their application, as Cement explicitly does not include them.*
 - [Installation Packages on PyPi](http://pypi.python.org/pypi/cement/)
 - [Website](http://builtoncement.com/)
 - [Travis Continuous Integration Testing](https://travis-ci.org/datafolklabs/cement)
-- [Slack Channel](https://join.slack.com/t/cementframework/shared_invite/enQtMzUzOTIzMDQwNjEwLThkY2FiYWU5ZmQ5ZmEzNGMzMTkyMDgzNTk2MWI0MGU1YWNmNTVmODgxYWNlZjJkZDBmODc0ZjM2MDg5ZmYyOTA)
+- [Slack Channel](https://join.slack.com/t/cementframework/shared_invite/enQtMzU0OTc5MDQ4NDA0LWMwMzZiOTczZjM4ZjFiZDE3MDk4MzA5ZmYxNmZjNTk4NzUwMzcyN2VlMDc5NzIxYjQ1NzlmNzgyNDFjMWJmMWY)
 
 
 ## License
